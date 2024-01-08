@@ -50,6 +50,16 @@
 			<version>8.0.33</version>
 		</dependency>
 		<dependency>
+			<groupId>org.liquibase</groupId>
+			<artifactId>liquibase-core</artifactId>
+			<version>${liquibase.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.liquibase</groupId>
+			<artifactId>liquibase-maven-plugin</artifactId>
+			<version>${liquibase.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
 			<scope>test</scope>
@@ -61,12 +71,6 @@
 			<artifactId>mapstruct</artifactId>
 			<version>${mapstruct.version}</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/jakarta.persistence/jakarta.persistence-api -->
-<!--		<dependency>-->
-<!--			<groupId>jakarta.persistence</groupId>-->
-<!--			<artifactId>jakarta.persistence-api</artifactId>-->
-<!--			<version>3.2.0-M1</version>-->
-<!--		</dependency>-->
 
 	</dependencies>
 
@@ -76,6 +80,15 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>org.liquibase</groupId>
+				<artifactId>liquibase-maven-plugin</artifactId>
+				<version>${liquibase.version}</version>
+				<configuration>
+					<propertyFile>src/main/resources/liquibase.properties</propertyFile>
+				</configuration>
 			</plugin>
 
 			<!-- Maven Compiler Plugin -->

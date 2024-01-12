@@ -12,6 +12,11 @@ public class PriceRangeSpecificationProvider
     private static final String PRICE = "price";
 
     @Override
+    public String getKey() {
+        return PRICE;
+    }
+
+    @Override
     public Specification<Book> getSpecification(BigDecimal minPrice, BigDecimal maxPrice) {
         return (root, query, criteriaBuilder)
                 -> criteriaBuilder.between(root.get(PRICE), minPrice, maxPrice);

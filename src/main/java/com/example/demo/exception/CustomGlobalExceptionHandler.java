@@ -58,6 +58,19 @@ public class CustomGlobalExceptionHandler extends ResponseEntityExceptionHandler
         return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(RegistrationException.class)
+    protected ResponseEntity<Object> handleRegistrationException(
+            RegistrationException ex,
+            WebRequest request
+    ) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.UNAUTHORIZED);
+        body.put("error", "registration failed");
+        body.put("message", ex.getMessage());
+        return new ResponseEntity<>(body, HttpStatus.UNAUTHORIZED);
+    }
+
     @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
     protected ResponseEntity<Object> handleSqlIntegrityConstraintViolationException(
             SQLIntegrityConstraintViolationException ex,

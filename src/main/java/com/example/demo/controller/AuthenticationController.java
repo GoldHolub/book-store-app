@@ -8,7 +8,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,8 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "User authentication", description = "Authentication of new user")
 @RequiredArgsConstructor
-@RequestMapping(value = "/api/auth")
-@Validated
+@RequestMapping(value = "api/auth")
 @RestController
 public class AuthenticationController {
     private final UserService userService;

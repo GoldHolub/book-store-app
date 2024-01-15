@@ -13,5 +13,6 @@ public interface UserMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "deleted", ignore = true)
+    @Mapping(target = "password", ignore = true)
     User toModel(UserRegistrationRequestDto requestDto);
 }

@@ -10,10 +10,8 @@ import org.hibernate.validator.constraints.ISBN;
 @Data
 public class CreateBookRequestDto {
     @NotBlank
-    @NotNull
     private String title;
     @NotBlank
-    @NotNull
     private String author;
     @ISBN
     @NotNull

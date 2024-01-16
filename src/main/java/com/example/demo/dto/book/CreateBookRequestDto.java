@@ -1,4 +1,4 @@
-package com.example.demo.dto;
+package com.example.demo.dto.book;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -10,10 +10,8 @@ import org.hibernate.validator.constraints.ISBN;
 @Data
 public class CreateBookRequestDto {
     @NotBlank
-    @NotNull
     private String title;
     @NotBlank
-    @NotNull
     private String author;
     @ISBN
     @NotNull

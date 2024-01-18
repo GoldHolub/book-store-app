@@ -6,10 +6,14 @@ import com.example.demo.dto.book.CreateBookRequestDto;
 import com.example.demo.exception.EntityNotFoundException;
 import com.example.demo.mapper.BookMapper;
 import com.example.demo.model.Book;
+import com.example.demo.model.Category;
 import com.example.demo.repository.book.BookRepository;
 import com.example.demo.repository.book.BookSpecificationBuilder;
+import com.example.demo.repository.category.CategoryRepository;
 import com.example.demo.service.BookService;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -21,10 +25,13 @@ public class BookServiceImpl implements BookService {
     private final BookRepository bookRepository;
     private final BookMapper bookMapper;
     private final BookSpecificationBuilder bookSpecificationBuilder;
+    private final CategoryRepository categoryRepository;
 
     @Override
     public BookDto save(CreateBookRequestDto bookRequestDto) {
         Book bookModel = bookMapper.toModel(bookRequestDto);
+        Set<Category> categories = setCategoriesByIds(bookRequestDto.getCategoryIds());
+        bookModel.setCategories(categories);
         return bookMapper.toDto(bookRepository.save(bookModel));
     }
 
@@ -54,6 +61,8 @@ public class BookServiceImpl implements BookService {
         bookRepository.findById(id).orElseThrow(
                 () -> new EntityNotFoundException("Can't find book by id: " + id));
         Book newBook = bookMapper.toModel(bookRequestDto);
+        Set<Category> categories = setCategoriesByIds(bookRequestDto.getCategoryIds());
+        newBook.setCategories(categories);
         newBook.setId(id);
         return bookMapper.toDto(bookRepository.save(newBook));
     }
@@ -65,5 +74,19 @@ public class BookServiceImpl implements BookService {
                 .stream()
                 .map(bookMapper::toDto)
                 .toList();
+    }
+
+    @Override
+    public List<BookDto> findAllByCategoryId(Long categoryId, Pageable pageable) {
+        return bookRepository.findBooksByCategoryId(categoryId, pageable).stream()
+                .map(bookMapper::toDto)
+                .toList();
+    }
+
+    private Set<Category> setCategoriesByIds(Set<Long> categoryIds) {
+        return categoryIds.stream()
+                .map(id -> categoryRepository.findById(id).orElseThrow(
+                        () -> new EntityNotFoundException("Can't find category by id: " + id)))
+                .collect(Collectors.toSet());
     }
 }

@@ -63,7 +63,7 @@ public class BookController {
         bookService.deleteById(id);
     }
 
-    @Operation(summary = "Update a book", description = "update an existing book by ID")
+    @Operation(summary = "Delete a book", description = "Delete a book by ID")
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('ADMIN')")
     public BookDto updateBook(@PathVariable Long id,

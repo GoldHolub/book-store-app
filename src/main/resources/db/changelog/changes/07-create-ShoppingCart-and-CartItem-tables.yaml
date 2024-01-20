@@ -1,0 +1,55 @@
+databaseChangeLog:
+  - changeSet:
+      id: insert-shopping_carts
+      author: GoldHolub
+      createTable:
+        tableName: shopping_carts
+        columns:
+          - column:
+              name: id
+              type: BIGINT
+              autoIncrement: true
+              constraints:
+                primaryKey: true
+          - column:
+              name: user_id
+              type: BIGINT
+              constraints:
+                foreignKeyName: fk_shopping_carts_user_id
+                references: users(id)
+                onDelete: CASCADE
+                nullable: false
+
+  - changeSet:
+      id: insert-cart_items
+      author: GoldHolub
+      createTable:
+        tableName: cart_items
+        columns:
+          - column:
+              name: id
+              type: BIGINT
+              autoIncrement: true
+              constraints:
+                primaryKey: true
+          - column:
+              name: shopping_cart_id
+              type: BIGINT
+              constraints:
+                foreignKeyName: fk_cart_items_shopping_cart_id
+                references: shopping_carts(id)
+                onDelete: CASCADE
+                nullable: false
+          - column:
+              name: book_id
+              type: BIGINT
+              constraints:
+                foreignKeyName: fk_cart_items_book_id
+                references: books(id)
+                onDelete: CASCADE
+                nullable: false
+          - column:
+              name: quantity
+              type: INT
+              constraints:
+                nullable: false

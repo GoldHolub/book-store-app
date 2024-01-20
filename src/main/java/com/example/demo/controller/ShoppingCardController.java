@@ -45,8 +45,8 @@ public class ShoppingCardController {
     @Operation(summary = "Update a book in ShoppingCart",
             description = "update a book in ShoppingCart")
     public CartItemResponseDto updateBookQuantityInShoppingCart(Authentication authentication,
-                                           @PathVariable Long cartItemId,
-                                           @RequestBody CartItemUpdateDataRequestDto requestDto) {
+                                     @PathVariable Long cartItemId,
+                                     @RequestBody @Valid CartItemUpdateDataRequestDto requestDto) {
         return shoppingCartService.updateBookQuantityInTheShoppingCart(authentication,
                                                                cartItemId, requestDto);
     }

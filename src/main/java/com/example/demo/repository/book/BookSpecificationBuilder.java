@@ -23,21 +23,23 @@ public class BookSpecificationBuilder implements SpecificationBuilder<Book> {
     @Override
     public Specification<Book> build(BookSearchParametersDto searchParameters) {
         Specification<Book> spec = Specification.where(null);
-        if (searchParameters.authors() != null && searchParameters.authors().length > 0) {
+        if (searchParameters.getAuthors() != null && searchParameters.getAuthors().length > 0) {
             spec = spec.and(specificationProviderManager
-                    .getSpecificationProvider(AUTHOR).getSpecification(searchParameters.authors()));
+                    .getSpecificationProvider(AUTHOR)
+                    .getSpecification(searchParameters.getAuthors()));
         }
-        if (searchParameters.titles() != null && searchParameters.titles().length > 0) {
+        if (searchParameters.getTitles() != null && searchParameters.getTitles().length > 0) {
             spec = spec.and(specificationProviderManager
-                    .getSpecificationProvider(TITLE).getSpecification(searchParameters.titles()));
+                    .getSpecificationProvider(TITLE)
+                    .getSpecification(searchParameters.getTitles()));
         }
-        if (searchParameters.maxPrice() != null
-                && searchParameters.maxPrice().compareTo(BigDecimal.ZERO) > 0
-                && searchParameters.minPrice() != null
-                && searchParameters.minPrice().compareTo(BigDecimal.ZERO) > 0
-                && searchParameters.maxPrice().compareTo(searchParameters.minPrice()) > 0) {
+        if (searchParameters.getMaxPrice() != null
+                && searchParameters.getMaxPrice().compareTo(BigDecimal.ZERO) > 0
+                && searchParameters.getMinPrice() != null
+                && searchParameters.getMinPrice().compareTo(BigDecimal.ZERO) > 0
+                && searchParameters.getMaxPrice().compareTo(searchParameters.getMinPrice()) > 0) {
             spec = spec.and(specificationProviderManagerForRange.getSpecificationProvider(PRICE)
-                    .getSpecification(searchParameters.minPrice(), searchParameters.maxPrice()));
+                 .getSpecification(searchParameters.getMinPrice(), searchParameters.getMaxPrice()));
         }
         return spec;
     }

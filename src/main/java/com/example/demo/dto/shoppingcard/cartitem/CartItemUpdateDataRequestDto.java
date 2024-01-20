@@ -1,9 +1,10 @@
 package com.example.demo.dto.shoppingcard.cartitem;
 
 import jakarta.validation.constraints.Min;
+import lombok.Data;
 
-public record CartItemUpdateDataRequestDto(
-        @Min(0)
-        int quantity
-) {
+@Data
+public class CartItemUpdateDataRequestDto {
+    @Min(0)
+    private int quantity;
 }

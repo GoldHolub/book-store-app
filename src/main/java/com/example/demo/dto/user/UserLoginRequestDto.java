@@ -3,14 +3,16 @@ package com.example.demo.dto.user;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.Data;
 
-public record UserLoginRequestDto(
-        @NotBlank
-        @Email
-        @Size(min = 8, max = 50)
-        String email,
-        @NotBlank
-        @Size(min = 8, max = 50)
-        String password
-) {
+@Data
+public class UserLoginRequestDto {
+    @NotBlank
+    @Email
+    @Size(min = 8, max = 50)
+    private String email;
+
+    @NotBlank
+    @Size(min = 8, max = 50)
+    private String password;
 }

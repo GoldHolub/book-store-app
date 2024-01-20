@@ -79,7 +79,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         CartItem cartItem = getValidCartItem(cartItemId);
         ShoppingCart shoppingCart = getValidShoppingCart(user.getId());
         if (cartItemRepository.findByShoppingCartId(shoppingCart.getId()).contains(cartItem)) {
-            cartItem.setQuantity(requestDto.quantity());
+            cartItem.setQuantity(requestDto.getQuantity());
             cartItemRepository.save(cartItem);
         } else {
             throw new EntityNotFoundException("Can't find CartItem by id: " + cartItemId

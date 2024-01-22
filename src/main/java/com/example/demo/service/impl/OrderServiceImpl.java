@@ -52,15 +52,9 @@ public class OrderServiceImpl implements OrderService {
                     + "Please fulfill it before order confirmation");
         }
 
-        Order order = new Order();
-        order.setUser(user);
-        order.setStatus(Order.Status.PENDING);
-        order.setOrderDate(LocalDateTime.now());
-        order.setShippingAddress(requestDto.getShippingAddress());
-        order.setTotal(countTotalOrderPrice(cartItems));
-        Order savedOrder = orderRepository.save(order);
-        savedOrder.setOrderItems(fullFillSetOfOrderItems(savedOrder, cartItems));
-        OrderResponseDto orderResponseDto = orderMapper.toDto(savedOrder);
+        Order order = composeOrder(shoppingCart, requestDto.getShippingAddress());
+        order.setOrderItems(fullFillSetOfOrderItems(order, cartItems));
+        OrderResponseDto orderResponseDto = orderMapper.toDto(order);
 
         cleanShoppingCart(shoppingCart);
         return orderResponseDto;
@@ -113,16 +107,18 @@ public class OrderServiceImpl implements OrderService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    private final Set<OrderItem> fullFillSetOfOrderItems(Order order, Set<CartItem> cartItems) {
-        return cartItems.stream()
+    private Set<OrderItem> fullFillSetOfOrderItems(Order order, Set<CartItem> cartItems) {
+        Set<OrderItem> orderItems = cartItems.stream()
                 .map(c -> fullFillOrderItem(order, c))
                 .collect(Collectors.toSet());
+        orderItemRepository.saveAll(orderItems);
+        return orderItems;
     }
 
     private OrderItem fullFillOrderItem(Order order, CartItem cartItem) {
         OrderItem orderItem = orderItemMapper.toModelFromCartItem(cartItem);
         orderItem.setOrder(order);
-        return orderItemRepository.save(orderItem);
+        return orderItem;
     }
 
     private Order getValidOrder(Authentication authentication, Long orderId) {
@@ -138,5 +134,15 @@ public class OrderServiceImpl implements OrderService {
     private ShoppingCart cleanShoppingCart(ShoppingCart shoppingCart) {
         shoppingCart.getCartItems().clear();
         return shoppingCartRepository.save(shoppingCart);
+    }
+
+    private Order composeOrder(ShoppingCart shoppingCart, String shippingAddress) {
+        Order order = new Order();
+        order.setUser(shoppingCart.getUser());
+        order.setStatus(Order.Status.PENDING);
+        order.setOrderDate(LocalDateTime.now());
+        order.setShippingAddress(shippingAddress);
+        order.setTotal(countTotalOrderPrice(shoppingCart.getCartItems()));
+        return orderRepository.save(order);
     }
 }

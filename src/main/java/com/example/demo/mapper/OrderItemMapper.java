@@ -15,5 +15,6 @@ public interface OrderItemMapper {
     @Mapping(source = "cartItem.book.price", target = "price")
     @Mapping(target = "order", ignore = true)
     @Mapping(target = "deleted", ignore = true)
+    @Mapping(target = "id", ignore = true)
     OrderItem toModelFromCartItem(CartItem cartItem);
 }

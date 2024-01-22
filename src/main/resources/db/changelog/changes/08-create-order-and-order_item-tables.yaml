@@ -4,7 +4,7 @@ databaseChangeLog:
       author: GoldHolub
       changes:
         - createTable:
-            tableName: user_orders
+            tableName: orders
             columns:
               - column:
                   name: id
@@ -18,12 +18,17 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
+                  name: status
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
                   name: total
                   type: DECIMAL
                   constraints:
                     nullable: false
               - column:
-                  name: order_time
+                  name: order_date
                   type: TIMESTAMP
                   constraints:
                     nullable: false

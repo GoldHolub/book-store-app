@@ -39,10 +39,12 @@ public class Order {
     @Column(nullable = false)
     private BigDecimal total;
     @Column(nullable = false, columnDefinition = "TIMESTAMP")
-    private LocalDateTime orderTime;
+    private LocalDateTime orderDate;
     @Column(nullable = false)
     private String shippingAddress;
-    @OneToMany(mappedBy = "order", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(mappedBy = "order",
+            cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST},
+            orphanRemoval = true)
     private Set<OrderItem> orderItems;
 
     public enum Status {

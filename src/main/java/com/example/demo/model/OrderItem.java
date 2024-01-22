@@ -10,6 +10,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
@@ -24,6 +25,7 @@ public class OrderItem {
     private Long id;
     @JoinColumn(name = "order_id", nullable = false)
     @ManyToOne
+    @EqualsAndHashCode.Exclude
     private Order order;
     @ManyToOne
     @JoinColumn(name = "book_id", nullable = false)

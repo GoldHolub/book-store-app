@@ -78,13 +78,12 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         User user = (User) authentication.getPrincipal();
         CartItem cartItem = getValidCartItem(cartItemId);
         ShoppingCart shoppingCart = getValidShoppingCart(user.getId());
-        if (cartItemRepository.findByShoppingCartId(shoppingCart.getId()).contains(cartItem)) {
-            cartItem.setQuantity(requestDto.getQuantity());
-            cartItemRepository.save(cartItem);
-        } else {
+        if (!cartItemRepository.findByShoppingCartId(shoppingCart.getId()).contains(cartItem)) {
             throw new EntityNotFoundException("Can't find CartItem by id: " + cartItemId
                     + " in the ShoppingCart to update");
         }
+        cartItem.setQuantity(requestDto.getQuantity());
+        cartItemRepository.save(cartItem);
         return cartItemMapper.toDto(cartItem);
     }
 
@@ -93,12 +92,11 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         User user = (User) authentication.getPrincipal();
         CartItem cartItem = getValidCartItem(cartItemId);
         ShoppingCart shoppingCart = getValidShoppingCart(user.getId());
-        if (cartItemRepository.findByShoppingCartId(shoppingCart.getId()).contains(cartItem)) {
-            cartItemRepository.delete(cartItem);
-        } else {
+        if (!cartItemRepository.findByShoppingCartId(shoppingCart.getId()).contains(cartItem)) {
             throw new EntityNotFoundException("Can't find CartItem by id: " + cartItemId
                     + " in the ShoppingCart to delete");
         }
+        cartItemRepository.delete(cartItem);
     }
 
     @Override

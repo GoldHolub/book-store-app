@@ -42,14 +42,16 @@ public class OrderServiceImpl implements OrderService {
     public OrderResponseDto createOrder(Authentication authentication, Pageable pageable,
                                         OrderSubmissionRequestDto requestDto) {
         User user = (User) authentication.getPrincipal();
-        ShoppingCart shoppingCart = shoppingCartRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new EntityNotFoundException("Can't find ShoppingCart by userId: "
-                                                                                   + user.getId()));
+        ShoppingCart shoppingCart = shoppingCartRepository.findByUserId(user.getId()).orElseThrow(
+                () -> new EntityNotFoundException("Can't find ShoppingCart by userId: "
+                                                                    + user.getId()));
+
         Set<CartItem> cartItems = shoppingCart.getCartItems();
         if (cartItems.isEmpty()) {
             throw new OrderException("ShoppingCart is empty. "
                     + "Please fulfill it before order confirmation");
         }
+
         Order order = new Order();
         order.setUser(user);
         order.setStatus(Order.Status.PENDING);
@@ -60,8 +62,7 @@ public class OrderServiceImpl implements OrderService {
         savedOrder.setOrderItems(fullFillSetOfOrderItems(savedOrder, cartItems));
         OrderResponseDto orderResponseDto = orderMapper.toDto(savedOrder);
 
-        shoppingCart.getCartItems().clear();
-        shoppingCartRepository.save(shoppingCart);
+        cleanShoppingCart(shoppingCart);
         return orderResponseDto;
     }
 
@@ -86,12 +87,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<OrderItemResponseDto> getOrderItemsByOrderId(Authentication authentication,
                                                              Long orderId, Pageable pageable) {
-        User user = (User) authentication.getPrincipal();
-        Order order = orderRepository.findOrderById(orderId).orElseThrow(
-                () -> new EntityNotFoundException("Can't find order by id: " + orderId));
-        if (!order.getUser().getId().equals(user.getId())) {
-            throw new OrderException("You don't have access to Order with id: " + orderId);
-        }
+        Order order = getValidOrder(authentication, orderId);
         List<OrderItem> orderItems = orderItemRepository.findOrderItemsByOrderId(orderId, pageable);
         return orderItems.stream()
                 .map(orderItemMapper::toDto)
@@ -101,14 +97,9 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderItemResponseDto getOrderItemByIdAndOrderId(Authentication authentication,
                                                            Long orderId, Long orderItemId) {
-        User user = (User) authentication.getPrincipal();
+        Order order = getValidOrder(authentication, orderId);
         OrderItem orderItem = orderItemRepository.findById(orderItemId).orElseThrow(
                 () -> new EntityNotFoundException("Can't find OrderItem by id: " + orderId));
-        Order order = orderRepository.findOrderById(orderId).orElseThrow(
-                () -> new EntityNotFoundException("Can't find order by id: " + orderId));
-        if (!order.getUser().getId().equals(user.getId())) {
-            throw new OrderException("You don't have access to Order with id: " + orderId);
-        }
         if (!orderItem.getOrder().getId().equals(order.getId())) {
             throw new OrderException("You don't have such OrderItem with id: "
                                             + orderItemId + " in your Order");
@@ -132,5 +123,20 @@ public class OrderServiceImpl implements OrderService {
         OrderItem orderItem = orderItemMapper.toModelFromCartItem(cartItem);
         orderItem.setOrder(order);
         return orderItemRepository.save(orderItem);
+    }
+
+    private Order getValidOrder(Authentication authentication, Long orderId) {
+        User user = (User) authentication.getPrincipal();
+        Order order = orderRepository.findOrderById(orderId).orElseThrow(
+                () -> new EntityNotFoundException("Can't find order by id: " + orderId));
+        if (!order.getUser().getId().equals(user.getId())) {
+            throw new OrderException("You don't have access to Order with id: " + orderId);
+        }
+        return order;
+    }
+
+    private ShoppingCart cleanShoppingCart(ShoppingCart shoppingCart) {
+        shoppingCart.getCartItems().clear();
+        return shoppingCartRepository.save(shoppingCart);
     }
 }

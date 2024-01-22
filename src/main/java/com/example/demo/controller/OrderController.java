@@ -33,11 +33,13 @@ public class OrderController {
         return orderService.createOrder(authentication, pageable, requestDto);
     }
 
+    @Operation(summary = "Get orders", description = "find user orders")
     @GetMapping
     public List<OrderResponseDto> getOrders(Authentication authentication, Pageable pageable) {
         return orderService.getOrders(authentication, pageable);
     }
 
+    @Operation(summary = "Update order status", description = "update order status bu orderId")
     @PatchMapping("/{orderId}")
     @PreAuthorize("hasAuthority('ADMIN')")
     public OrderResponseDto updateOrderStatus(@PathVariable Long orderId,
@@ -45,6 +47,7 @@ public class OrderController {
         return orderService.updateOrderStatus(orderId, requestDto);
     }
 
+    @Operation(summary = "Get order items", description = "find order items by orderId")
     @GetMapping("/{orderId}/items")
     public List<OrderItemResponseDto> getOrderItemsByOrderId(Authentication authentication,
                                                                @PathVariable Long orderId,
@@ -52,6 +55,7 @@ public class OrderController {
         return orderService.getOrderItemsByOrderId(authentication, orderId, pageable);
     }
 
+    @Operation(summary = "Get OrderItem", description = "find OrderItems by orderId and ItemId")
     @GetMapping("/{orderId}/items/{orderItemId}")
     public OrderItemResponseDto getOrderItemByIdAndOrderId(Authentication authentication,
                                                            @PathVariable Long orderId,

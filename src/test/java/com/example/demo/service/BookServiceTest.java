@@ -1,28 +1,39 @@
 package com.example.demo.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 import com.example.demo.dto.book.BookDto;
+import com.example.demo.dto.book.BookSearchParametersDto;
 import com.example.demo.dto.book.CreateBookRequestDto;
 import com.example.demo.exception.EntityNotFoundException;
 import com.example.demo.mapper.BookMapper;
 import com.example.demo.model.Book;
 import com.example.demo.model.Category;
 import com.example.demo.repository.book.BookRepository;
+import com.example.demo.repository.book.BookSpecificationBuilder;
 import com.example.demo.repository.category.CategoryRepository;
 import com.example.demo.service.impl.BookServiceImpl;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
 @ExtendWith(MockitoExtension.class)
 public class BookServiceTest {
+    @Mock
+    private BookSpecificationBuilder bookSpecificationBuilder;
     @Mock
     private BookMapper bookMapper;
     @Mock
@@ -68,7 +79,8 @@ public class BookServiceTest {
         when(bookMapper.toDto(book)).thenReturn(bookDto);
 
         BookDto savedBookDto = bookService.save(bookRequestDto);
-        Assertions.assertEquals(bookDto, savedBookDto);
+
+        assertEquals(bookDto, savedBookDto);
     }
 
     @Test
@@ -87,8 +99,8 @@ public class BookServiceTest {
 
         BookDto retrievedBookDto = bookService.getBookById(validBookId);
 
-        Assertions.assertNotNull(retrievedBookDto);
-        Assertions.assertEquals(book.getId(), retrievedBookDto.getId());
+        assertNotNull(retrievedBookDto);
+        assertEquals(book.getId(), retrievedBookDto.getId());
     }
 
     @Test
@@ -97,9 +109,7 @@ public class BookServiceTest {
 
         when(bookRepository.findById(invalidBookId)).thenReturn(Optional.empty());
 
-        Assertions.assertThrows(EntityNotFoundException.class, () -> {
-            bookService.getBookById(invalidBookId);
-        });
+        assertThrows(EntityNotFoundException.class, () -> bookService.getBookById(invalidBookId));
     }
 
     @Test
@@ -130,10 +140,10 @@ public class BookServiceTest {
 
         BookDto resultBookDto = bookService.updateBookById(validBookId, updatedBookRequestDto);
 
-        Assertions.assertNotNull(resultBookDto);
-        Assertions.assertEquals(validBookId, resultBookDto.getId());
-        Assertions.assertEquals("Updated Author", resultBookDto.getAuthor());
-        Assertions.assertEquals("Updated Title", resultBookDto.getTitle());
+        assertNotNull(resultBookDto);
+        assertEquals(validBookId, resultBookDto.getId());
+        assertEquals("Updated Author", resultBookDto.getAuthor());
+        assertEquals("Updated Title", resultBookDto.getTitle());
     }
 
     @Test
@@ -143,8 +153,33 @@ public class BookServiceTest {
 
         when(bookRepository.findById(invalidBookId)).thenReturn(Optional.empty());
 
-        Assertions.assertThrows(EntityNotFoundException.class, () -> {
-            bookService.updateBookById(invalidBookId, updatedBookRequestDto);
-        });
+        assertThrows(EntityNotFoundException.class,
+                () -> bookService.updateBookById(invalidBookId, updatedBookRequestDto));
+    }
+
+    @Test
+    public void search_ZeroConditions_ListWithTwoBooks() {
+        Book book1 = new Book();
+        book1.setId(1L);
+        book1.setTitle("Book 1");
+
+        Book book2 = new Book();
+        book2.setId(2L);
+        book2.setTitle("Book 2");
+
+        List<Book> books = List.of(book1, book2);
+        Page<Book> bookPage = new PageImpl<>(books);
+        Specification<Book> spec = Specification.where(null);
+        BookSearchParametersDto searchParameters = new BookSearchParametersDto();
+        Pageable pageable = Pageable.unpaged();
+
+        when(bookSpecificationBuilder.build(searchParameters)).thenReturn(spec);
+        when(bookRepository.findAll(spec, pageable)).thenReturn(bookPage);
+        when(bookMapper.toDto(book1)).thenReturn(new BookDto());
+        when(bookMapper.toDto(book2)).thenReturn(new BookDto());
+
+        List<BookDto> result = bookService.search(searchParameters, pageable);
+
+        assertEquals(2, result.size());
     }
 }

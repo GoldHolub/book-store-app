@@ -1,5 +1,7 @@
 package com.example.demo.controller;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -11,7 +13,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,7 +65,8 @@ public class CategoryControllerTest {
 
         CategoryDto actual = objectMapper
                 .readValue(mvcResult.getResponse().getContentAsString(), CategoryDto.class);
-        Assertions.assertNotNull(actual);
+
+        assertNotNull(actual);
         EqualsBuilder.reflectionEquals(expected, actual);
     }
 
@@ -83,8 +85,9 @@ public class CategoryControllerTest {
 
         CategoryDto[] actual = objectMapper
                 .readValue(mvcResult.getResponse().getContentAsString(), CategoryDto[].class);
-        Assertions.assertEquals(3, actual.length);
-        Assertions.assertEquals(expected, Arrays.stream(actual).toList());
+
+        assertEquals(3, actual.length);
+        assertEquals(expected, Arrays.stream(actual).toList());
     }
 
     @Sql(scripts = "classpath:database/books/add-categories-to-db.sql",
@@ -107,7 +110,8 @@ public class CategoryControllerTest {
 
         CategoryDto actual = objectMapper
                 .readValue(mvcResult.getResponse().getContentAsString(), CategoryDto.class);
-        Assertions.assertNotNull(actual);
+
+        assertNotNull(actual);
         EqualsBuilder.reflectionEquals(expected, actual);
     }
 
@@ -143,7 +147,8 @@ public class CategoryControllerTest {
 
         BookDto[] actual = objectMapper
                 .readValue(mvcResult.getResponse().getContentAsString(), BookDto[].class);
-        Assertions.assertEquals(2, actual.length);
+
+        assertEquals(2, actual.length);
     }
 
     @Sql(scripts = "classpath:database/books/add-books-and-category-to-db.sql",
@@ -160,7 +165,28 @@ public class CategoryControllerTest {
 
         BookDto[] actual = objectMapper
                 .readValue(mvcResult.getResponse().getContentAsString(), BookDto[].class);
-        Assertions.assertEquals(0, actual.length);
+
+        assertEquals(0, actual.length);
+    }
+
+    @Sql(scripts = "classpath:database/books/add-categories-to-db.sql",
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = "classpath:database/books/delete-categories-from-db.sql",
+            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    @WithMockUser(authorities = {"ADMIN"})
+    @Test
+    void getCategoryById_validId_ok() throws Exception {
+        MvcResult mvcResult = mockMvc.perform(get("/api/categories/2")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andReturn();
+
+        CategoryDto expected = createThreeExistingCategories().get(1);
+        CategoryDto actual = objectMapper
+                .readValue(mvcResult.getResponse().getContentAsString(), CategoryDto.class);
+
+        assertNotNull(actual);
+        assertEquals(expected, actual);
     }
 
     private List<CategoryDto> createThreeExistingCategories() {

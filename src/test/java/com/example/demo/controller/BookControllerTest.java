@@ -1,18 +1,20 @@
 package com.example.demo.controller;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 import com.example.demo.dto.book.BookDto;
 import com.example.demo.dto.book.CreateBookRequestDto;
+import com.example.demo.service.BookService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.junit.jupiter.api.Assertions;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +43,8 @@ public class BookControllerTest {
     private BookController bookController;
     @Autowired
     private ObjectMapper objectMapper;
+    @Autowired
+    private BookService bookService;
 
     @BeforeAll
     public static void applySecurity(@Autowired WebApplicationContext applicationContext) {
@@ -68,6 +72,7 @@ public class BookControllerTest {
         expected.setPrice(bookRequestDto.getPrice());
         expected.setCategoryIds(bookRequestDto.getCategoryIds());
         expected.setIsbn(bookRequestDto.getIsbn());
+        expected.setId(3L);
 
         String jsonRequest = objectMapper.writeValueAsString(bookRequestDto);
 
@@ -79,14 +84,16 @@ public class BookControllerTest {
 
         BookDto actual = objectMapper
                 .readValue(mvcResult.getResponse().getContentAsString(), BookDto.class);
-        Assertions.assertNotNull(actual);
-        Assertions.assertNotNull(actual.getId());
-        EqualsBuilder.reflectionEquals(expected, actual, "id");
+
+        assertNotNull(actual);
+        assertNotNull(actual.getId());
+        assertEquals(expected, actual);
     }
 
+    @SneakyThrows
     @Test
     @WithMockUser(authorities = {"ADMIN"})
-    void getAll_givenBooksInCatalog_ShouldReturnAllProducts() throws Exception {
+    void getAll_givenBooksInCatalog_ShouldReturnAllProducts() {
         List<BookDto> expected = createTwoExistingBooks();
 
         MvcResult mvcResult = mockMvc.perform(get("/api/books")
@@ -96,8 +103,9 @@ public class BookControllerTest {
 
         BookDto[] actual = objectMapper
                 .readValue(mvcResult.getResponse().getContentAsString(), BookDto[].class);
-        Assertions.assertEquals(2, actual.length);
-        Assertions.assertEquals(expected, Arrays.stream(actual).toList());
+
+        assertEquals(2, actual.length);
+        assertEquals(expected, Arrays.stream(actual).toList());
     }
 
     @Test
@@ -127,9 +135,10 @@ public class BookControllerTest {
 
         BookDto actual = objectMapper
                 .readValue(mvcResult.getResponse().getContentAsString(), BookDto.class);
-        Assertions.assertNotNull(actual);
-        Assertions.assertNotNull(actual.getId());
-        EqualsBuilder.reflectionEquals(expected, actual, "id");
+
+        assertNotNull(actual);
+        assertNotNull(actual.getId());
+        assertEquals(expected, actual);
     }
 
     @Test
@@ -158,20 +167,34 @@ public class BookControllerTest {
 
         BookDto actual = objectMapper
                 .readValue(mvcResult.getResponse().getContentAsString(), BookDto.class);
-        Assertions.assertNotNull(actual);
-        Assertions.assertNotNull(actual.getId());
-        EqualsBuilder.reflectionEquals(expected, actual);
+
+        assertNotNull(actual);
+        assertNotNull(actual.getId());
+        assertEquals(expected, actual);
     }
 
     @Test
     @WithMockUser(authorities = {"ADMIN"})
     void getBookById_invalidId_notOk() throws Exception {
-        BookDto expected = createTwoExistingBooks().get(1);
-
-        MvcResult mvcResult = mockMvc.perform(get("/api/books/152")
+        mockMvc.perform(get("/api/books/152")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.status().isNotFound())
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(authorities = {"ADMIN"})
+    void search_getBooksByPriceFrom5To12_ListWithOneBook() throws Exception {
+        MvcResult mvcResult = mockMvc.perform(get("/api/books/search")
+                        .param("minPrice", "5")
+                        .param("maxPrice", "12")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk())
                 .andReturn();
+
+        BookDto[] actual = objectMapper
+                .readValue(mvcResult.getResponse().getContentAsString(), BookDto[].class);
+
+        assertEquals(1, actual.length);
     }
 
     private List<BookDto> createTwoExistingBooks() {

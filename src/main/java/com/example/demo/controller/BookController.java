@@ -50,6 +50,7 @@ public class BookController {
     }
 
     @Operation(summary = "Create a new book", description = "create a new book")
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     @PreAuthorize("hasAuthority('ADMIN')")
     public BookDto createBook(@RequestBody @Valid CreateBookRequestDto bookDto) {

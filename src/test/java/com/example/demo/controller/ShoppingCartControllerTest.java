@@ -1,16 +1,13 @@
 package com.example.demo.controller;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
-import com.example.demo.dto.shoppingcard.ShoppingCartDto;
 import com.example.demo.dto.shoppingcard.cartitem.CartItemRequestDto;
-import com.example.demo.dto.shoppingcard.cartitem.CartItemResponseDto;
 import com.example.demo.dto.shoppingcard.cartitem.CartItemUpdateDataRequestDto;
 import com.example.demo.model.Role;
 import com.example.demo.model.User;
@@ -28,7 +25,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
@@ -61,16 +57,12 @@ public class ShoppingCartControllerTest {
     void getUserShoppingCart_validUser_ok() throws Exception {
         Authentication authentication = generateCustomAuthentication(VALID_USER_ID);
 
-        MvcResult mvcResult = mockMvc.perform(get("/api/cart")
+        mockMvc.perform(get("/api/cart")
                         .contentType(MediaType.APPLICATION_JSON)
                         .with(authentication(authentication)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andReturn();
-
-        ShoppingCartDto actual = objectMapper
-                .readValue(mvcResult.getResponse().getContentAsString(), ShoppingCartDto.class);
-        assertNotNull(actual);
-        assertEquals(AMOUNT_OF_BOOKS, actual.getCartItems().size());
+                .andExpect(jsonPath("$.id").exists())
+                .andExpect(jsonPath("$.cartItems.length()").value(AMOUNT_OF_BOOKS));
     }
 
     @Sql(scripts = "classpath:database/shoppingCart/add-books-to-shoppingCart-and-db.sql",
@@ -100,19 +92,14 @@ public class ShoppingCartControllerTest {
 
         String jsonRequest = objectMapper.writeValueAsString(expected);
 
-        MvcResult mvcResult = mockMvc.perform(post("/api/cart")
+        mockMvc.perform(post("/api/cart")
                         .content(jsonRequest)
                         .contentType(MediaType.APPLICATION_JSON)
                         .with(authentication(authentication)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andReturn();
-
-        CartItemResponseDto actual = objectMapper
-                .readValue(mvcResult.getResponse().getContentAsString(), CartItemResponseDto.class);
-
-        assertNotNull(actual);
-        assertEquals(expected.getBookId(), actual.getBookId());
-        assertEquals(expected.getQuantity(), actual.getQuantity());
+                .andExpect(jsonPath("$.id").exists())
+                .andExpect(jsonPath("$.bookId").value(expected.getBookId()))
+                .andExpect(jsonPath("$.quantity").value(expected.getQuantity()));
     }
 
     @Sql(scripts = "classpath:database/shoppingCart/add-books-to-shoppingCart-and-db.sql",
@@ -147,18 +134,13 @@ public class ShoppingCartControllerTest {
 
         String jsonRequest = objectMapper.writeValueAsString(expected);
 
-        MvcResult mvcResult = mockMvc.perform(put("/api/cart/cart-items/1")
+        mockMvc.perform(put("/api/cart/cart-items/1")
                         .content(jsonRequest)
                         .contentType(MediaType.APPLICATION_JSON)
                         .with(authentication(authentication)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andReturn();
-
-        CartItemResponseDto actual = objectMapper
-                .readValue(mvcResult.getResponse().getContentAsString(), CartItemResponseDto.class);
-
-        assertNotNull(actual);
-        assertEquals(actual.getQuantity(), expected.getQuantity());
+                .andExpect(jsonPath("$.id").exists())
+                .andExpect(jsonPath("$.quantity").value(expected.getQuantity()));
     }
 
     @Sql(scripts = "classpath:database/shoppingCart/add-books-to-shoppingCart-and-db.sql",

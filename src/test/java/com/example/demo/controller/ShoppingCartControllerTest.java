@@ -3,7 +3,10 @@ package com.example.demo.controller;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 
 import com.example.demo.dto.shoppingcard.ShoppingCartDto;
 import com.example.demo.dto.shoppingcard.cartitem.CartItemRequestDto;
@@ -12,6 +15,7 @@ import com.example.demo.dto.shoppingcard.cartitem.CartItemUpdateDataRequestDto;
 import com.example.demo.model.Role;
 import com.example.demo.model.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,18 +32,19 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-import java.util.Set;
 
 @Sql(scripts = "classpath:database/shoppingCart/delete-books-and-shoppingCart-from-db.sql",
         executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ExtendWith(MockitoExtension.class)
 public class ShoppingCartControllerTest {
+    private static final int AMOUNT_OF_BOOKS = 2;
     private static final Long VALID_USER_ID = 1L;
     private static final Long INVALID_USER_ID = 2L;
     private static MockMvc mockMvc;
     @Autowired
     private ObjectMapper objectMapper;
+
     @BeforeAll
     public static void applySecurity(@Autowired WebApplicationContext applicationContext) {
         mockMvc = MockMvcBuilders
@@ -65,7 +70,7 @@ public class ShoppingCartControllerTest {
         ShoppingCartDto actual = objectMapper
                 .readValue(mvcResult.getResponse().getContentAsString(), ShoppingCartDto.class);
         assertNotNull(actual);
-        assertEquals(2, actual.getCartItems().size());
+        assertEquals(AMOUNT_OF_BOOKS, actual.getCartItems().size());
     }
 
     @Sql(scripts = "classpath:database/shoppingCart/add-books-to-shoppingCart-and-db.sql",
@@ -91,7 +96,7 @@ public class ShoppingCartControllerTest {
         Authentication authentication = generateCustomAuthentication(VALID_USER_ID);
         CartItemRequestDto expected = new CartItemRequestDto();
         expected.setBookId(1L);
-        expected.setQuantity(2);
+        expected.setQuantity(AMOUNT_OF_BOOKS);
 
         String jsonRequest = objectMapper.writeValueAsString(expected);
 
@@ -119,7 +124,7 @@ public class ShoppingCartControllerTest {
         Authentication authentication = generateCustomAuthentication(VALID_USER_ID);
         CartItemRequestDto expected = new CartItemRequestDto();
         expected.setBookId(1000L);
-        expected.setQuantity(2);
+        expected.setQuantity(AMOUNT_OF_BOOKS);
 
         String jsonRequest = objectMapper.writeValueAsString(expected);
 

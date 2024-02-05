@@ -27,7 +27,8 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-@Sql(scripts = {"classpath:database/books/delete-books-and-category-from-db.sql",
+@Sql(scripts = {"classpath:database/shoppingCart/delete-books-and-shoppingCart-from-db.sql",
+                "classpath:database/books/delete-books-and-category-from-db.sql",
                 "classpath:database/books/delete-categories-from-db.sql",},
         executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -46,7 +47,7 @@ public class CategoryControllerTest {
                 .build();
     }
 
-    @Sql(scripts = "classpath:database/books/delete-categories-from-db.sql",
+    @Sql(scripts = {"classpath:database/books/delete-categories-from-db.sql"},
             executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     @Test
     @WithMockUser(authorities = {"ADMIN"})

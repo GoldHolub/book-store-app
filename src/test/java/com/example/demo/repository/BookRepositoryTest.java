@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.example.demo.model.Book;
 import com.example.demo.repository.book.BookRepository;
-import com.example.demo.repository.category.CategoryRepository;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,8 +20,6 @@ import org.springframework.test.context.jdbc.Sql;
 public class BookRepositoryTest {
     @Autowired
     private BookRepository bookRepository;
-    @Autowired
-    private CategoryRepository categoryRepository;
 
     @Test
     void findBooksByCategoryId_NonExistingId_ReturnEmptyList() {
